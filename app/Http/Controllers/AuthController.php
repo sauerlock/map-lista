@@ -1,71 +1,86 @@
 <?php
 
-namespace App\Http\Controllers;
+    namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+    use App\Models\User;
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Hash;
 
-class AuthController extends Controller
-{
-    public function register(Request $request)
+    class AuthController extends Controller
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        public function register(Request $request)
+        {
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+            ]);
 
-        return response()->json([
-            'message' => 'Usuário cadastrado com sucesso!',
-            'token' => $token,
-            'user' => $user
-        ]);
-    }
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-    public function login(Request $request)
-    {
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Credenciais inválidas'], 401);
+            return response()->json([
+                'message' => 'Usuário cadastrado com sucesso!',
+                'token' => $token,
+                'user' => $user
+            ]);
         }
 
-        $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        public function login(Request $request)
+        {
+            if (!Auth::attempt($request->only('email', 'password'))) {
+                \Log::warning('Tentativa de login falhou para o e-mail: ' . $request->email);
+                return response()->json(['message' => 'Credenciais inválidas'], 401);
+            }
 
-        return response()->json(['token' => $token, 'user' => $user]);
-    }
-    public function excluirConta(Request $request)
-    {
-        // Obtém o usuário autenticado
-        $user = Auth::user();
+            $user = Auth::user();
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Valida a senha fornecida
-        $request->validate([
-            'password' => 'required|string',
-        ]);
+            return response()->json(['token' => $token, 'user' => $user]);
+        }
+        public function excluirConta(Request $request)
+        {
+            // Obtém o usuário autenticado
+            $user = Auth::user();
 
-        // Verifica se a senha fornecida é válida
-        if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Senha incorreta'], 401);
+            // Valida a senha fornecida
+            $request->validate([
+                'password' => 'required|string',
+            ]);
+
+            // Verifica se a senha fornecida é válida
+            if (!Hash::check($request->password, $user->password)) {
+                return response()->json(['error' => 'Senha incorreta'], 401);
+            }
+
+            // Exclui os dados associados ao usuário (contatos)
+            $user->contatos()->delete();
+
+            // Exclui o usuário
+            $user->delete();
+
+            //Log para exclusão
+            \Log::info('Usuário excluído: ' . $user->email);
+            return response()->json(['message' => 'Conta excluída com sucesso.'], 200);
+
         }
 
-        // Exclui os dados associados ao usuário (contatos)
-        $user->contatos()->delete();
+        public function logout(Request $request)
+        {
+            if (!$request->user()) {
+                return response()->json(['message' => 'Usuário não autenticado.'], 401);
+            }
 
-        // Exclui o usuário
-        $user->delete();
+            $request->user()->tokens()->delete();
 
-        // Retorna uma resposta de sucesso
-        return response()->json(['message' => 'Conta excluída com sucesso.'], 200);
+            return response()->json(['message' => 'Logout realizado com sucesso.'], 200);
+        }
+
     }
-
-}
