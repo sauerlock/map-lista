@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -27,4 +28,31 @@ class Handler extends ExceptionHandler
             //
         });
     }
+    /**
+     * Render an exception into an HTTP response.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Throwable  $exception
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function render($request, Throwable $exception)
+    {
+        if ($exception instanceof NotFoundHttpException) {
+            return response()->json([
+                'message' => 'Rota não encontrada.',
+                'status' => 404
+            ], 404);
+        }
+
+        if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
+            return response()->json([
+                'message' => 'Usuário não autenticado.',
+                'status' => 401
+            ], 401);
+        }
+
+        return parent::render($request, $exception);
+    }
+
+
 }
