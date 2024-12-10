@@ -1,14 +1,26 @@
 #SEGUIR O CAMINHO DO USUARIO#
+
+
 ##REGISTER##
+
 ##LOGIN##
+
 ##ADD CONTATOS##
+
 ##GET CONTATOS##
+
 ##EDITA CONTATOS##
+
 #DELETA CONTATOS##
+
 ##FORGOT PASSWORD##
+
 ##RESET PASSWORD##
+
 ##BUSCA ENDERECO##
+
 ##OBTEM COORDENADAS##
+
 ##SEARCH CONTATOS##
 
 #Lembrar de sempre utilizar o token gerado no momento do login#
