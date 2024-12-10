@@ -80,7 +80,7 @@ Desenvolver uma aplicação para gerenciamento de contatos, com funcionalidades 
 ### Mensagens de Erro:
 - Erros de validação e exceções são tratados e retornam mensagens claras para o usuário.
 
-## Documentação da API
+## Rotas da API
 
 ### **POST /api/register**:
 - Cadastro de um novo usuário.
