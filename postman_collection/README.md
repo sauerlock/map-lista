@@ -1,5 +1,6 @@
 # SEGUIR O CAMINHO DO USUARIO
 
+### Lembrar de sempre utilizar o token gerado no momento do login
 
 ## REGISTER
 
@@ -23,4 +24,3 @@
 
 ## SEARCH CONTATOS
 
-# Lembrar de sempre utilizar o token gerado no momento do login
