@@ -11,13 +11,13 @@ class Contato extends Model
 
     // Adicione os campos que podem ser atribuídos em massa
     protected $fillable = [
-        'nome',      // Permite o campo 'nome' ser preenchido via atribuição em massa
-        'cpf',       // Permite o campo 'cpf' ser preenchido via atribuição em massa
-        'telefone',  // Permite o campo 'telefone' ser preenchido via atribuição em massa
-        'endereco',  // Permite o campo 'endereco' ser preenchido via atribuição em massa
-        'cep',       // Permite o campo 'cep' ser preenchido via atribuição em massa
-        'latitude',  // Permite o campo 'latitude' ser preenchido via atribuição em massa
-        'longitude', // Permite o campo 'longitude' ser preenchido via atribuição em massa
+        'nome',
+        'cpf',
+        'telefone',
+        'endereco',
+        'cep',
+        'latitude',
+        'longitude',
     ];
 
     // Se você não deseja permitir a atribuição em massa de todos os campos, use $guarded:

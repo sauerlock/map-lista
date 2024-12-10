@@ -45,5 +45,5 @@ Route::delete('/excluir-conta', [AuthController::class, 'excluirConta']);
 
 // GET
 Route::get('/buscar-endereco', [EnderecoController::class, 'buscarEndereco']);
-Route::get('/obter-coordenadas', [EnderecoController::class, 'obterCoordenadas']);
+Route::get('/obter-coordenadas', [EnderecoController::class, 'obterCoordenadas'])->name('obter-coordenadas');
 
