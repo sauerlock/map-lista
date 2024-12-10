@@ -1,26 +1,26 @@
-#SEGUIR O CAMINHO DO USUARIO#
+# SEGUIR O CAMINHO DO USUARIO
 
 
-##REGISTER##
+## REGISTER
 
-##LOGIN##
+## LOGIN
 
-##ADD CONTATOS##
+## ADD CONTATOS
 
-##GET CONTATOS##
+## GET CONTATOS
 
-##EDITA CONTATOS##
+## EDITA CONTATOS
 
-#DELETA CONTATOS##
+## DELETA CONTATOS
 
-##FORGOT PASSWORD##
+## FORGOT PASSWORD
 
-##RESET PASSWORD##
+## RESET PASSWORD
 
-##BUSCA ENDERECO##
+## BUSCA ENDERECO
 
-##OBTEM COORDENADAS##
+## OBTEM COORDENADAS
 
-##SEARCH CONTATOS##
+## SEARCH CONTATOS
 
-#Lembrar de sempre utilizar o token gerado no momento do login#
+# Lembrar de sempre utilizar o token gerado no momento do login
