@@ -40,8 +40,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/search-contato', [ContatoController::class, 'search']);
 });
 
-
+// Rotas DELETE
 Route::delete('/excluir-conta', [AuthController::class, 'excluirConta']);
+
+// GET
 Route::get('/buscar-endereco', [EnderecoController::class, 'buscarEndereco']);
 Route::get('/obter-coordenadas', [EnderecoController::class, 'obterCoordenadas']);
 

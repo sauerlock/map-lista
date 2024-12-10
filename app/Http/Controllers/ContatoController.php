@@ -58,21 +58,21 @@ class ContatoController extends Controller
         return response()->json($contato, 201);
     }
 
-    // Método para listar todos os contatos do usuário autenticado
+    // List todos os contatos do usuário autenticado
     public function index()
     {
         $contatos = Auth::user()->contatos()->orderBy('nome')->get();
         return response()->json($contatos, 200);
     }
 
-    // Método para atualizar um contato existente
+    // Atualiza um contato existente
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
             'cpf' => 'required|string',
             'telefone' => 'required|string',
-            'endereco' => 'required|string',
+            'endereco' => 'string',
             'cep' => 'required|string|size:8',
         ]);
 
@@ -99,7 +99,7 @@ class ContatoController extends Controller
         return response()->json($contato, 200);
     }
 
-    // Método para excluir um contato
+    // Exclui um contato
     public function destroy($id)
     {
         $contato = Auth::user()->contatos()->findOrFail($id);
@@ -108,7 +108,7 @@ class ContatoController extends Controller
         return response()->json(['message' => 'Contato removido com sucesso!'], 200);
     }
 
-    // Método para buscar contatos por nome ou CPF
+    // Busca contatos por nome ou CPF
     public function search(Request $request)
     {
         $request->validate(['search' => 'required|string']);
@@ -124,13 +124,13 @@ class ContatoController extends Controller
         return response()->json($contatos, 200);
     }
 
-    // Método para obter coordenadas a partir do endereço utilizando a API do Google Maps
+    // Obtem coordenadas a partir do endereço utilizando a API do Google Maps
     private function getCoordinatesFromAddress($address)
     {
         $response = Http::withOptions([
             'verify' => false,  // Desabilita a verificação SSL
         ])->get('https://maps.googleapis.com/maps/api/geocode/json', [
-            'address' => $address,
+            'address' => '$address',
             'key' => $this->googleMapsApiKey,
         ]);
 

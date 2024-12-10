@@ -13,7 +13,7 @@
         {
 
             $validated = $request->validate([
-                'name' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
+                'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
             ]);
@@ -30,7 +30,7 @@
                 'message' => 'Usuário cadastrado com sucesso!',
                 'token' => $token,
                 'user' => $user
-            ]);
+            ], 201);
         }
 
         public function login(Request $request)
