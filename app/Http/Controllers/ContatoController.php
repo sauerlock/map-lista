@@ -3,20 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contato;
+use App\Services\CEPValidationService;
+use App\Services\GoogleGeocodingService;
+use App\Services\CPFValidationService; // Serviço para validação de CPF
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ContatoController extends Controller
 {
-    // Chave de API do Google Maps
-    protected $googleMapsApiKey;
+    protected $geocodingService;
+    protected $CPFValidationService;
+    protected $CEPValidationService;
 
-    public function __construct()
+    public function __construct(GoogleGeocodingService $geocodingService, CPFValidationService $CPFValidationService, CEPValidationService $CEPValidationService)
     {
-        // Defina sua chave da API do Google Maps
-        $this->googleMapsApiKey = env('GOOGLE_API_KEY');
+        $this->geocodingService = $geocodingService;
+        $this->CPFValidationService = $CPFValidationService;
+        $this->CEPValidationService = $CEPValidationService;
     }
 
     public function store(Request $request)
@@ -29,33 +33,36 @@ class ContatoController extends Controller
             'cpf' => 'required|string|unique:contatos,cpf',
             'telefone' => 'required|string',
             'endereco' => 'required|string',
-            'cep' => 'required|string|',
+            'cep' => 'required|string',
         ]);
 
-        // Obter as coordenadas (latitude e longitude) com base no endereço
-        $coordinates = $this->getCoordinatesFromAddress($validated['endereco']);
-
-        if (!$coordinates) {
-            return response()->json(['error' => 'Não foi possível obter as coordenadas para o endereço'], 400);
+        $cpf = $validated['cpf'];
+        // Verifica se o CPF já está registrado para o usuário autenticado
+        $existingCpf = Auth::user()->contatos()->where('cpf', $cpf)->first();
+        if ($existingCpf) {
+            return response()->json(['error' => 'O CPF já está cadastrado para este usuário.'], 400);
+        }
+        // Valida o CPF
+        if (!$this->CPFValidationService->validarCpf($cpf)) {
+            return response()->json(['error' => 'CPF inválido'], 400);
         }
 
-        Log::info('Validação concluída com sucesso', $validated);
+        // Obter as coordenadas (latitude e longitude) com base no endereço
+        $coordinates = $this->geocodingService->buscarCoordenadas($request->endereco);
+        if (isset($coordinates['error'])) {
+            return response()->json(['message' => $coordinates['error']], 400);
+        }
 
-        // Criação do novo contato no banco de dados com dados de localização
-        $contato = Auth::user()->contatos()->create([
-            'nome' => $validated['nome'],
-            'cpf' => $validated['cpf'],
-            'telefone' => $validated['telefone'],
-            'endereco' => $validated['endereco'],
-            'cep' => $validated['cep'],
-            'latitude' => $coordinates['latitude'],
-            'longitude' => $coordinates['longitude'],
-        ]);
+        // Fazendo a requisição para o serviço ViaCEP
+        $cep = $this->CEPValidationService->validateCep($request);
+        // Verifica se o retorno foi efetuado com sucesso
+        if (isset($cep['error'])) {
+            return response()->json(['message' => $cep['error']], 400);
+        }
 
-        Log::info('Contato criado com sucesso', ['contato' => $contato]);
-
-        // Retorna o contato criado com status 201 (Created)
-        return response()->json($contato, 201);
+        // Criação do novo contato com as coordenadas
+        $contato = Auth::user()->contatos()->create(array_merge($validated, $coordinates));
+        return response()->json($contato, 201);  // Retorna o contato criado
     }
 
     // List todos os contatos do usuário autenticado
@@ -73,13 +80,13 @@ class ContatoController extends Controller
             'cpf' => 'required|string',
             'telefone' => 'required|string',
             'endereco' => 'string',
-            'cep' => 'required|string|size:8',
+            'cep' => 'required|string',
         ]);
 
         $contato = Auth::user()->contatos()->findOrFail($id);
 
         // Obter as coordenadas (latitude e longitude) com base no endereço
-        $coordinates = $this->getCoordinatesFromAddress($validated['endereco']);
+        $coordinates = $this->geocodingService->buscarCoordenadas($validated['endereco']);
 
         if (!$coordinates) {
             return response()->json(['error' => 'Não foi possível obter as coordenadas para o endereço'], 400);
@@ -122,31 +129,5 @@ class ContatoController extends Controller
             ->get();
 
         return response()->json($contatos, 200);
-    }
-
-    // Obtem coordenadas a partir do endereço utilizando a API do Google Maps
-    private function getCoordinatesFromAddress($address)
-    {
-        $response = Http::withOptions([
-            'verify' => false,  // Desabilita a verificação SSL
-        ])->get('https://maps.googleapis.com/maps/api/geocode/json', [
-            'address' => '$address',
-            'key' => $this->googleMapsApiKey,
-        ]);
-
-        // Verifica se a resposta da API foi bem-sucedida
-        if ($response->successful()) {
-            $data = $response->json();
-
-            // Verifica se a geolocalização foi encontrada
-            if (isset($data['results'][0]['geometry']['location'])) {
-                return [
-                    'latitude' => $data['results'][0]['geometry']['location']['lat'],
-                    'longitude' => $data['results'][0]['geometry']['location']['lng'],
-                ];
-            }
-        }
-
-        return null; // Se não conseguir obter as coordenadas, retorna null
     }
 }
