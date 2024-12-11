@@ -26,8 +26,11 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'
 // Rotas de autenticação (POST)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::delete('/excluir-conta', [AuthController::class, 'excluirConta']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
 
 // Rota para obter informações do usuário autenticado
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -39,9 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('contatos', ContatoController::class)->except(['show', 'edit', 'create']);
     Route::get('/search-contato', [ContatoController::class, 'search']);
 });
-
-// Rotas DELETE
-Route::delete('/excluir-conta', [AuthController::class, 'excluirConta']);
 
 // GET
 Route::get('/buscar-endereco', [EnderecoController::class, 'buscarEndereco']);

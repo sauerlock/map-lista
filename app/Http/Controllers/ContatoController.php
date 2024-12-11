@@ -76,6 +76,7 @@ class ContatoController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
+            'id' => 'required|integer',
             'nome' => 'required|string|max:255',
             'cpf' => 'required|string',
             'telefone' => 'required|string',

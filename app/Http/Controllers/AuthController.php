@@ -49,7 +49,10 @@
         {
             // Obtém o usuário autenticado
             $user = Auth::user();
-
+            if (!$user)
+            {
+                return response()->json(['error' => 'Usuário não autenticado'], 401);
+            }
             // Valida a senha fornecida
             $request->validate([
                 'password' => 'required|string',
